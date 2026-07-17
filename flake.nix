@@ -52,6 +52,7 @@
           };
           nixosModules = {
             syncthing = importApply ./nix/modules/syncthing { inherit self inputs; };
+            immich = importApply ./nix/modules/immich { inherit self inputs; };
           };
         };
       }
