@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ inputs, self, ... }:
 {
   lib,
   pkgs,
@@ -15,7 +15,8 @@ in
   imports = [
     inputs.homelab.nixosModules.postgresql
     inputs.homelab.nixosModules.redis
-  ];
+  ]
+  ++ self.lib.importsApply [ ./homepage.nix ];
   config = lib.mkIf cfg.enable {
     assertions = [
       {
