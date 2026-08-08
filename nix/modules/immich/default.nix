@@ -50,7 +50,7 @@ in
         kind = "ConfigMap";
         metadata = {
           namespace = "immich";
-          name = "config";
+          name = "immich";
           labels."app.kubernetes.io/name" = "immich";
         };
         data."immich-config.json" = builtins.toJSON {
@@ -95,7 +95,7 @@ in
               };
               volumeMountsByPath."/etc/immich" = "config";
             };
-            volumesByName.config.configMap.name = "config";
+            volumesByName.config.configMap.name = "immich";
           };
         };
       };
