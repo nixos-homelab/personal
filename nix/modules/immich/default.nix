@@ -13,8 +13,8 @@ in
     enable = lib.mkEnableOption "Immich";
   };
   imports = [
-    inputs.shared.nixosModules.postgresql
-    inputs.shared.nixosModules.redis
+    inputs.homelab-shared.nixosModules.postgresql
+    inputs.homelab-shared.nixosModules.redis
   ]
   ++ self.lib.importsApply [ ./homepage.nix ];
   config = lib.mkIf cfg.enable {
