@@ -58,7 +58,7 @@ in
           newVersionCheck.enabled = false;
         };
       };
-      service-macro = {
+      workload = {
         apiVersion = "cluster.local";
         kind = "WorkloadMacro";
         metadata.name = "immich";
