@@ -78,13 +78,13 @@ in
   config = lib.mkIf cfg.enable {
     homelab.cluster.backup.volumes.imap-backup.imap-backup = [ "/data" ];
     setup-secrets = {
-      sources = lib.mapAttrs' (
-        name: spec:
-        lib.nameValuePair (envVarName name) {
+      sources = lib.mapAttrs' (name: spec: {
+        name = (envVarName name);
+        value = {
           description = "IMAP Password for ${name}";
           cmd = hllib.setup-secrets.mkScript pkgs "getKubeSecret imap-backup passwords ${envVarName name}";
-        }
-      ) cfg.accounts;
+        };
+      }) cfg.accounts;
       destinations = lib.mapAttrsToList (name: spec: {
         logPrefix = "imap-backup (${envVarName name})";
         requires = [ (envVarName name) ];
