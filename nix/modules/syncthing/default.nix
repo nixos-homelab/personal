@@ -5,10 +5,10 @@
   ...
 }:
 let
-  cfg = config.homelab.workloads.syncthing;
+  cfg = config.homelab.syncthing;
 in
 {
-  options.homelab.workloads.syncthing = {
+  options.homelab.syncthing = {
     enable = lib.mkEnableOption "Syncthing";
   };
   config = lib.mkIf cfg.enable {

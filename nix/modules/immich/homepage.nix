@@ -7,15 +7,15 @@
 }:
 let
   ccfg = config.homelab.cluster;
-  cfg = config.homelab.workloads.homepage.integrations.immich;
+  cfg = config.homelab.homepage.integrations.immich;
   hllib = inputs.homelab-shared.lib;
 in
 {
-  options.homelab.workloads.homepage.integrations.immich = {
+  options.homelab.homepage.integrations.immich = {
     enable = lib.mkOption {
       description = "integration of immich with homepage";
       type = lib.types.bool;
-      default = config.homelab.workloads.immich.enable && config.homelab.workloads.homepage.enable;
+      default = config.homelab.immich.enable && config.homelab.homepage.enable;
     };
   };
   imports = [
@@ -36,7 +36,7 @@ in
         }
       ];
     };
-    homelab.workloads.homepage = {
+    homelab.homepage = {
       services.Media.Immich = {
         icon = "immich.png";
         description = "Photos and Videos";

@@ -6,10 +6,10 @@
   ...
 }:
 let
-  cfg = config.homelab.workloads.immich;
+  cfg = config.homelab.immich;
 in
 {
-  options.homelab.workloads.immich = {
+  options.homelab.immich = {
     enable = lib.mkEnableOption "Immich";
   };
   imports = [
@@ -20,15 +20,15 @@ in
   config = lib.mkIf cfg.enable {
     assertions = [
       {
-        assertion = config.homelab.workloads.postgresql.enable;
+        assertion = config.homelab.postgresql.enable;
         message = "Immich depends on the PostgreSQL service. Enable with `homelab.postgresql.enable=true`";
       }
       {
-        assertion = config.homelab.workloads.redis.enable;
+        assertion = config.homelab.redis.enable;
         message = "Immich depends on the Redis service. Enable with `homelab.redis.enable=true`";
       }
     ];
-    homelab.workloads.postgresql = {
+    homelab.postgresql = {
       databases.immich = {
         backup.enable = lib.mkDefault true;
         setupCommands = [
@@ -43,7 +43,7 @@ in
       ];
     };
     homelab.cluster.backup.volumes.immich.immich = [ "/library" ];
-    homelab.workloads.redis.databases.immich = lib.mkDefault "1";
+    homelab.redis.databases.immich = lib.mkDefault "1";
     kubetree.resources.immich = {
       config = {
         apiVersion = "v1";
@@ -78,7 +78,7 @@ in
                 IMMICH_PORT = "2283";
                 DB_URL = "postgresql://immich:immich@postgresql.postgresql:5432/immich";
                 REDIS_HOSTNAME = "redis.redis";
-                REDIS_DBINDEX = config.homelab.workloads.redis.databases.immich;
+                REDIS_DBINDEX = config.homelab.redis.databases.immich;
               };
               portsByName = {
                 web = 2283;

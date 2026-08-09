@@ -6,7 +6,7 @@
   ...
 }:
 let
-  cfg = config.homelab.workloads.imap-backup;
+  cfg = config.homelab.imap-backup;
   hllib = inputs.homelab-shared.lib;
   container-utils = inputs.homelab-shared.packages.${pkgs.stdenv.hostPlatform.system}.container-utils;
   envVarName =
@@ -16,7 +16,7 @@ let
     }";
 in
 {
-  options.homelab.workloads.imap-backup = {
+  options.homelab.imap-backup = {
     enable = lib.mkEnableOption "imap-backup";
     schedule = lib.mkOption {
       description = "Cronjob notation of when the imap-backup should run";
