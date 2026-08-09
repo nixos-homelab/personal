@@ -6,7 +6,7 @@
   ...
 }:
 let
-  cfg = config.homelab.services.imap-backup;
+  cfg = config.homelab.workloads.imap-backup;
   hllib = inputs.homelab-shared.lib;
   container-utils = inputs.homelab-shared.packages.${pkgs.stdenv.hostPlatform.system}.container-utils;
   envVarName =
@@ -16,7 +16,7 @@ let
     }";
 in
 {
-  options.homelab.services.imap-backup = {
+  options.homelab.workloads.imap-backup = {
     enable = lib.mkEnableOption "imap-backup";
     schedule = lib.mkOption {
       description = "Cronjob notation of when the imap-backup should run";
@@ -143,11 +143,11 @@ in
             "app.kubernetes.io/name" = "imap-backup";
             "cluster.local/internet-egress" = "allow";
           };
-          servicePodSpec = {
+          podSpecMacro = {
             name = "imap-backup";
             restartPolicy = "OnFailure";
-            securityContext = config.kubetree.service-macros.securityContext // {
-              fsGroup = config.kubetree.service-macros.securityContext.runAsGroup;
+            securityContext = config.kubetree.workload-macros.securityContext // {
+              fsGroup = config.kubetree.workload-macros.securityContext.runAsGroup;
             };
             initContainersByName.render-config = {
               image = "${container-utils.buildArgs.name}:${container-utils.imageTag}";

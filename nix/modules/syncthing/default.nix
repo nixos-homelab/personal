@@ -5,10 +5,10 @@
   ...
 }:
 let
-  cfg = config.homelab.services.syncthing;
+  cfg = config.homelab.workloads.syncthing;
 in
 {
-  options.homelab.services.syncthing = {
+  options.homelab.workloads.syncthing = {
     enable = lib.mkEnableOption "Syncthing";
   };
   config = lib.mkIf cfg.enable {
@@ -19,12 +19,12 @@ in
     kubetree.resources.syncthing = {
       service-macro = {
         apiVersion = "cluster.local";
-        kind = "ServiceMacro";
+        kind = "WorkloadMacro";
         metadata.name = "syncthing";
         spec = {
           dataPath = "/var/syncthing";
           ingressPort = 8384;
-          servicePodSpec.mainContainer = {
+          podSpecMacro.mainContainer = {
             image = "syncthing/syncthing:latest";
             portsByName = {
               web = 8384;
