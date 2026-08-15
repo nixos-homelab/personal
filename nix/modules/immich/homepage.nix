@@ -26,13 +26,13 @@ in
     setup-secrets = {
       sources.IMMICH_API_KEY = {
         description = "Immich API Key";
-        cmd = hllib.setup-secrets.mkScript pkgs "getKubeSecret homepage immich-api-key IMMICH_API_KEY";
+        cmd = hllib.setup-secrets.mkScript pkgs "getKubeSecret homepage immich-api-key HOMEPAGE_VAR_IMMICH_API_KEY";
       };
       destinations = [
         {
           logPrefix = "Homepage (IMMICH_API_KEY)";
           requires = [ "IMMICH_API_KEY" ];
-          cmd = hllib.setup-secrets.mkScript pkgs ''setKubeSecret homepage immich-api-key IMMICH_API_KEY "''${IMMICH_API_KEY:?}"'';
+          cmd = hllib.setup-secrets.mkScript pkgs ''setKubeSecret homepage immich-api-key HOMEPAGE_VAR_IMMICH_API_KEY "''${IMMICH_API_KEY:?}"'';
         }
       ];
     };
@@ -47,10 +47,7 @@ in
         };
         key = "{{HOMEPAGE_VAR_IMMICH_API_KEY}}";
       };
-      envByName.HOMEPAGE_VAR_IMMICH_API_KEY.valueFrom.secretKeyRef = {
-        name = "immich-api-key";
-        key = "IMMICH_API_KEY";
-      };
+      envFrom = [ { secretRef.name = "immich-api-key"; } ];
       allowEgress = [ "immich" ];
     };
   };
