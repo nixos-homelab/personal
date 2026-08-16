@@ -16,6 +16,7 @@ in
       description = "integration of immich with homepage";
       type = lib.types.bool;
       default = config.homelab.immich.enable && config.homelab.homepage.enable;
+      defaultText = lib.literalExpression "config.homelab.immich.enable && config.homelab.homepage.enable";
     };
   };
   imports = [

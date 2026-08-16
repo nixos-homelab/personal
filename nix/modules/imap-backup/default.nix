@@ -25,6 +25,7 @@ in
       example = "10 3 * * *";
     };
     accounts = lib.mkOption {
+      description = "Attrset of named accounts to back up";
       type = lib.types.attrsOf (
         lib.types.submodule (
           { name, ... }: {
