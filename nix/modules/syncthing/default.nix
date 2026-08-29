@@ -1,4 +1,4 @@
-{ ... }:
+{ self, ... }:
 {
   lib,
   config,
@@ -11,6 +11,7 @@ in
   options.homelab.syncthing = {
     enable = lib.mkEnableOption "Syncthing";
   };
+  imports = self.lib.importsApply [ ./homepage.nix ];
   config = lib.mkIf cfg.enable {
     homelab.cluster.backup.volumes.syncthing.syncthing = [
       "/config"
