@@ -58,6 +58,7 @@
           };
           nixosModules = {
             syncthing = importApply ./nix/modules/syncthing { inherit self inputs; };
+            homepage = importApply ./nix/modules/homepage { inherit self inputs; };
             imap-backup = importApply ./nix/modules/imap-backup { inherit self inputs; };
             immich = importApply ./nix/modules/immich { inherit self inputs; };
           };

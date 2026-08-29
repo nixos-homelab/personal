@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ inputs, self, ... }:
 {
   lib,
   pkgs,
@@ -21,12 +21,14 @@ in
   imports = [
     inputs.setup-secrets.nixosModules.default
     inputs.homelab-shared.nixosModules.homepage
+    self.nixosModules.homepage
   ];
   config = lib.mkIf cfg.enable {
     homelab.homepage = {
-      assets."syncthing.svg" = ./logo.svg;
-      bookmarks.Networking.syncthing = {
-        icon = "/assets/syncthing.svg";
+      sections.Personal.enable = lib.mkDefault true;
+      services.Personal.syncthing = {
+        enable = lib.mkDefault true;
+        icon = "syncthing.png";
         href = "https://syncthing.${ccfg.domain}";
         description = "Continuous file synchronization";
       };

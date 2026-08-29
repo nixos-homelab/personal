@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ inputs, self, ... }:
 {
   lib,
   pkgs,
@@ -22,6 +22,7 @@ in
   imports = [
     inputs.setup-secrets.nixosModules.default
     inputs.homelab-shared.nixosModules.homepage
+    self.nixosModules.homepage
   ];
   config = lib.mkIf cfg.enable {
     setup-secrets = {
@@ -38,15 +39,19 @@ in
       ];
     };
     homelab.homepage = {
-      services.Media.Immich = {
+      sections.Personal.enable = lib.mkDefault true;
+      services.Personal.Immich = {
+        enable = lib.mkDefault true;
         icon = "immich.png";
         description = "Photos and Videos";
         href = "https://immich.${ccfg.domain}";
-        widget = {
-          type = "immich";
-          url = "http://immich.immich:2283";
-        };
-        key = "{{HOMEPAGE_VAR_IMMICH_API_KEY}}";
+        widgets = [
+          {
+            type = "immich";
+            url = "http://immich.immich:2283";
+            key = "{{HOMEPAGE_VAR_IMMICH_API_KEY}}";
+          }
+        ];
       };
       envFrom = [ { secretRef.name = "immich-api-key"; } ];
       allowEgress = [ "immich" ];
