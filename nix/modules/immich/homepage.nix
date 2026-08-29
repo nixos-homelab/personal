@@ -9,6 +9,7 @@ let
   ccfg = config.homelab.cluster;
   cfg = config.homelab.homepage.integrations.immich;
   hllib = inputs.homelab-shared.lib;
+  workload = config.kubetree.resources.immich.workload;
 in
 {
   options.homelab.homepage.integrations.immich = {
@@ -48,7 +49,7 @@ in
         widgets = [
           {
             type = "immich";
-            url = "http://immich.immich:2283";
+            url = hllib.workload-macros.workloadServiceUrl workload;
             key = "{{HOMEPAGE_VAR_IMMICH_API_KEY}}";
             version = 2;
           }

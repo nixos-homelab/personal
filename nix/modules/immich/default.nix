@@ -6,6 +6,7 @@
   ...
 }:
 let
+  ccfg = config.homelab.cluster;
   cfg = config.homelab.immich;
 in
 {
