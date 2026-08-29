@@ -50,6 +50,7 @@ in
             type = "immich";
             url = "http://immich.immich:2283";
             key = "{{HOMEPAGE_VAR_IMMICH_API_KEY}}";
+            version = 2;
           }
         ];
       };
