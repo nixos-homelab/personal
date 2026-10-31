@@ -77,7 +77,7 @@ in
   };
   imports = [ ];
   config = lib.mkIf cfg.enable {
-    homelab.cluster.backup.volumes.imap-backup.imap-backup = [ "/data" ];
+    homelab.cluster.backup.volumes.imap-backup.imap-backup = [ "/" ];
     setup-secrets = {
       sources = lib.mapAttrs' (name: spec: {
         name = (envVarName name);
