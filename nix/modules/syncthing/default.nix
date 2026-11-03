@@ -26,7 +26,7 @@ in
           dataPath = "/var/syncthing";
           ingressPort = 8384;
           podSpecMacro.mainContainer = {
-            image = "syncthing/syncthing:latest";
+            image = "syncthing/syncthing:2.1.7";
             portsByName = {
               web = 8384;
               sync-tcp = 22000;

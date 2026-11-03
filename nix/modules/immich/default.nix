@@ -72,7 +72,7 @@ in
           ingressPort = 2283;
           podSpecMacro = {
             mainContainer = {
-              image = "ghcr.io/immich-app/immich-server:v3";
+              image = "ghcr.io/immich-app/immich-server:v3.2.1";
               envByName = {
                 IMMICH_CONFIG_FILE = "/etc/immich/immich-config.json";
                 IMMICH_VERSION = "v3";
