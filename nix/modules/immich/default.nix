@@ -77,7 +77,12 @@ in
                 IMMICH_CONFIG_FILE = "/etc/immich/immich-config.json";
                 IMMICH_VERSION = "v3";
                 IMMICH_PORT = "2283";
-                DB_URL = "postgresql://immich:immich@postgresql.postgresql:5432/immich";
+                # Defined before DB_URL, which $(…) needs
+                DATABASE_PASSWORD.valueFrom.secretKeyRef = {
+                  name = "postgresql-password";
+                  key = "password";
+                };
+                DB_URL = "postgresql://immich:$(DATABASE_PASSWORD)@postgresql.postgresql:5432/immich";
                 REDIS_HOSTNAME = "redis.redis";
                 REDIS_DBINDEX = config.homelab.redis.databases.immich;
               };
