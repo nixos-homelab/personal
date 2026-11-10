@@ -1,10 +1,12 @@
-{ self, ... }:
+{ inputs, self, ... }:
 {
   lib,
+  pkgs,
   config,
   ...
 }:
 let
+  images = inputs.homelab-shared.lib.images.pinned pkgs ./Dockerfile;
   cfg = config.homelab.syncthing;
 in
 {
@@ -13,6 +15,7 @@ in
   };
   imports = self.lib.importsApply [ ./homepage.nix ];
   config = lib.mkIf cfg.enable {
+    services.k3s.images = builtins.attrValues images;
     homelab.cluster.backup.volumes.syncthing.syncthing = [
       "/config"
       "/data"
@@ -26,7 +29,8 @@ in
           dataPath = "/var/syncthing";
           ingressPort = 8384;
           podSpecMacro.mainContainer = {
-            image = "syncthing/syncthing:2.1.7";
+            image = images."syncthing/syncthing".ref;
+            imagePullPolicy = "Never";
             portsByName = {
               web = 8384;
               sync-tcp = 22000;

@@ -6,6 +6,7 @@
   ...
 }:
 let
+  images = inputs.homelab-shared.lib.images.pinned pkgs ./Dockerfile;
   ccfg = config.homelab.cluster;
   cfg = config.homelab.immich;
 in
@@ -19,6 +20,7 @@ in
   ]
   ++ self.lib.importsApply [ ./homepage.nix ];
   config = lib.mkIf cfg.enable {
+    services.k3s.images = builtins.attrValues images;
     assertions = [
       {
         assertion = config.homelab.postgresql.enable;
@@ -72,7 +74,8 @@ in
           ingressPort = 2283;
           podSpecMacro = {
             mainContainer = {
-              image = "ghcr.io/immich-app/immich-server:v3.2.1";
+              image = images."ghcr.io/immich-app/immich-server".ref;
+              imagePullPolicy = "Never";
               envByName = {
                 IMMICH_CONFIG_FILE = "/etc/immich/immich-config.json";
                 IMMICH_VERSION = "v3";

@@ -6,6 +6,7 @@
   ...
 }:
 let
+  images = inputs.homelab-shared.lib.images.pinned pkgs ./Dockerfile;
   cfg = config.homelab.imap-backup;
   hllib = inputs.homelab-shared.lib;
   container-utils = inputs.homelab-shared.packages.${pkgs.stdenv.hostPlatform.system}.container-utils;
@@ -77,6 +78,7 @@ in
   };
   imports = [ ];
   config = lib.mkIf cfg.enable {
+    services.k3s.images = builtins.attrValues images;
     homelab.cluster.backup.volumes.imap-backup.imap-backup = [ "/" ];
     setup-secrets = {
       sources = lib.mapAttrs' (name: spec: {
@@ -170,7 +172,8 @@ in
             };
           };
           mainContainer = {
-            image = "ghcr.io/joeyates/imap-backup:v16.6.0";
+            image = images."ghcr.io/joeyates/imap-backup".ref;
+            imagePullPolicy = "Never";
             command = [ "imap-backup" ];
             args = [ "backup" ];
             volumeMountsByPath = {
