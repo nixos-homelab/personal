@@ -66,6 +66,22 @@
         perSystem =
           { pkgs, lib, ... }:
           {
+            checks.manifests = inputs.homelab-shared.lib.checks.manifests {
+              inherit pkgs;
+              modules = lib.attrValues self.nixosModules ++ [
+                {
+                  homelab = {
+                    syncthing.enable = true;
+                    immich.enable = true;
+                    imap-backup.accounts.example = {
+                      username = "user@example.org";
+                      server = "imap.example.org";
+                    };
+                    homepage.enable = true;
+                  };
+                }
+              ];
+            };
             packages = {
               options-docs = inputs.docs.lib.docs.options {
                 inherit pkgs;
