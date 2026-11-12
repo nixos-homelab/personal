@@ -6,24 +6,7 @@
   ...
 }:
 let
-  images = inputs.homelab-shared.lib.images;
-  # The pod gets no /dev/dri, so the Intel OpenCL runtime (hardware tone-mapping) can't run
-  server = images.strip pkgs (images.pinned pkgs ./Dockerfile)."ghcr.io/immich-app/immich-server" [
-    "etc/OpenCL/vendors/intel*"
-    "etc/alternatives/ocloc"
-    "usr/bin/ocloc*"
-    "usr/lib/x86_64-linux-gnu/intel-opencl"
-    "usr/lib/x86_64-linux-gnu/libocloc_legacy1.so"
-    "usr/local/lib/igc"
-    "usr/local/lib/igc2"
-    "usr/local/lib/libiga64.so*"
-    "usr/local/lib/libigc.so*"
-    "usr/local/lib/libigdfcl.so*"
-    "usr/local/lib/libopencl-clang*"
-    # Build leftovers
-    "usr/local/include"
-    "usr/local/lib/*.a"
-  ];
+  images = inputs.homelab-shared.lib.images.pinned pkgs ./Dockerfile;
   ccfg = config.homelab.cluster;
   cfg = config.homelab.immich;
 in
@@ -37,7 +20,7 @@ in
   ]
   ++ self.lib.importsApply [ ./homepage.nix ];
   config = lib.mkIf cfg.enable {
-    services.k3s.images = [ server ];
+    services.k3s.images = builtins.attrValues images;
     assertions = [
       {
         assertion = config.homelab.postgresql.enable;
@@ -91,7 +74,7 @@ in
           ingressPort = 2283;
           podSpecMacro = {
             mainContainer = {
-              image = server.ref;
+              image = images."ghcr.io/immich-app/immich-server".ref;
               imagePullPolicy = "Never";
               envByName = {
                 IMMICH_CONFIG_FILE = "/etc/immich/immich-config.json";
