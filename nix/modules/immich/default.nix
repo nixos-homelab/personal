@@ -94,6 +94,14 @@ in
                 metrics-api = 8081;
                 metrics-ms = 8082;
               };
+              # A first start migrates the database, which can outlast the liveness probe on a busy node
+              startupProbe = {
+                httpGet = {
+                  path = "/api/server/ping";
+                  port = "web";
+                };
+                failureThreshold = 30;
+              };
               livenessProbe.httpGet = {
                 path = "/api/server/ping";
                 port = "web";
