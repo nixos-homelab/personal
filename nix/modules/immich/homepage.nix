@@ -6,7 +6,6 @@
   ...
 }:
 let
-  ccfg = config.homelab.cluster;
   cfg = config.homelab.homepage.integrations.immich;
   hllib = inputs.homelab-shared.lib;
 in
@@ -44,7 +43,7 @@ in
         enable = lib.mkDefault true;
         icon = "immich.png";
         description = "Photos and Videos";
-        href = "https://immich.${ccfg.domain}";
+        href = "https://immich.${config.homelab.workloads.domain}";
         widgets = [
           {
             type = "immich";

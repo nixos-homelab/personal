@@ -6,7 +6,6 @@
   ...
 }:
 let
-  ccfg = config.homelab.cluster;
   cfg = config.homelab.homepage.integrations.syncthing;
 in
 {
@@ -29,7 +28,7 @@ in
       services.Personal.syncthing = {
         enable = lib.mkDefault true;
         icon = "syncthing.png";
-        href = "https://syncthing.${ccfg.domain}";
+        href = "https://syncthing.${config.homelab.workloads.domain}";
         description = "Continuous file synchronization";
       };
     };
