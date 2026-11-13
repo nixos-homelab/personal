@@ -73,6 +73,7 @@
                   homelab = {
                     syncthing.enable = true;
                     immich.enable = true;
+                    imap-backup.enable = true;
                     imap-backup.accounts.example = {
                       username = "user@example.org";
                       server = "imap.example.org";
