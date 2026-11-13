@@ -20,27 +20,23 @@ in
       "/config"
       "/data"
     ];
-    kubetree.resources.syncthing = {
-      workload = {
-        apiVersion = "cluster.local";
-        kind = "WorkloadMacro";
-        metadata.name = "syncthing";
-        spec = {
-          dataPath = "/var/syncthing";
-          ingressPort = 8384;
-          podSpecMacro.mainContainer = {
-            image = images."syncthing/syncthing".ref;
-            imagePullPolicy = "Never";
-            portsByName = {
-              web = 8384;
-              sync-tcp = 22000;
-              sync-udp = {
-                containerPort = 21027;
-                protocol = "UDP";
-              };
-            };
-            readinessProbe.httpGet.port = "web";
+    homelab.kubernetes.submodules.instances.syncthing = {
+      submodule = "workload";
+      args = {
+        dataPath = "/var/syncthing";
+        ingressPort = 8384;
+        ports = {
+          web = 8384;
+          sync-tcp = 22000;
+          sync-udp = {
+            containerPort = 21027;
+            protocol = "UDP";
           };
+        };
+        container = {
+          image = images."syncthing/syncthing".ref;
+          imagePullPolicy = "Never";
+          readinessProbe.httpGet.port = "web";
         };
       };
     };

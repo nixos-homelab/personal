@@ -94,97 +94,89 @@ in
         cmd = hllib.setup-secrets.mkScript pkgs ''setKubeSecret imap-backup passwords ${envVarName name} "''${${envVarName name}:?}"'';
       }) cfg.accounts;
     };
-    kubetree.resources.imap-backup = {
-      namespace = (hllib.k8s.createNamespace { namespace = "imap-backup"; });
-      data = {
-        apiVersion = "v1";
-        kind = "PersistentVolumeClaim";
-        metadata.namespace = "imap-backup";
-        metadata.name = "imap-backup";
-        spec = {
-          accessModes = [ "ReadWriteOnce" ];
-          resources.requests.storage = "1Gi";
-          volumeMode = "Filesystem";
-        };
-      };
+    homelab.kubernetes.submodules.instances.imap-backup = {
+      submodule = "manifest";
       config = {
-        apiVersion = "v1";
-        kind = "ConfigMap";
-        metadata = {
-          namespace = "imap-backup";
-          name = "imap-backup";
-          labels."app.kubernetes.io/name" = "imap-backup";
-        };
-        data."config.json" = builtins.toJSON {
-          version = "2.2";
-          accounts = lib.mapAttrsToList (
-            name: spec:
-            {
-              username = spec.username;
-              password = "${envVarName name}";
-              status = spec.status;
-              local_path = "/data/${spec.localPath}";
-              folders = spec.folders;
-              mirror_mode = spec.mirrorMode;
-              server = spec.server;
-              multi_fetch_size = spec.multiFetchSize;
-            }
-            // spec.extraSettings
-          ) cfg.accounts;
-          download_strategy = "delay_metadata";
-        };
-      };
-      cronJob = {
-        apiVersion = "cluster.local";
-        kind = "CronJobMacro";
-        metadata.name = "imap-backup";
-        spec.schedule = cfg.schedule;
-        spec.allowEgress = [ "internet" ];
-        spec.podSpecMacro = {
-          name = "imap-backup";
-          initContainersByName.render-config = {
-            image = "${container-utils.buildArgs.name}:${container-utils.imageTag}";
-            imagePullPolicy = "Never";
-            args = [
-              ''
-                touch /config-tmp/config.json
-                chmod 600 /config-tmp/config.json
-                conf=$(cat /config/config.json)
-                jq -r '.accounts[] | .password' <<<"$conf" | {
-                  i=0
-                  while read -r var; do
-                    conf=$(jq --argjson idx "$i" --arg pw "''${!var}" '.accounts[$idx].password=$pw' <<<"$conf")
-                    : $((i++))
-                  done
-                  printf "%s\n" "$conf"
-                } >/config-tmp/config.json
-              ''
-            ];
-            envFrom = [ { secretRef.name = "passwords"; } ];
-            securityContext = {
-              allowPrivilegeEscalation = false;
-              readOnlyRootFilesystem = true;
-              capabilities.drop = [ "ALL" ];
-            };
-            volumeMountsByPath = {
-              "/config" = "config";
-              "/config-tmp" = "config-tmp";
+        kubernetes.resources = {
+          namespaces.imap-backup.metadata.namespace = null;
+          persistentVolumeClaims.imap-backup.spec = {
+            accessModes = [ "ReadWriteOnce" ];
+            resources.requests.storage = "1Gi";
+            volumeMode = "Filesystem";
+          };
+          configMaps.imap-backup = {
+            metadata.labels."app.kubernetes.io/name" = "imap-backup";
+            data."config.json" = builtins.toJSON {
+              version = "2.2";
+              accounts = lib.mapAttrsToList (
+                name: spec:
+                {
+                  username = spec.username;
+                  password = "${envVarName name}";
+                  status = spec.status;
+                  local_path = "/data/${spec.localPath}";
+                  folders = spec.folders;
+                  mirror_mode = spec.mirrorMode;
+                  server = spec.server;
+                  multi_fetch_size = spec.multiFetchSize;
+                }
+                // spec.extraSettings
+              ) cfg.accounts;
+              download_strategy = "delay_metadata";
             };
           };
-          mainContainer = {
-            image = images."ghcr.io/joeyates/imap-backup".ref;
-            imagePullPolicy = "Never";
-            command = [ "imap-backup" ];
-            args = [ "backup" ];
-            volumeMountsByPath = {
-              "/.imap-backup" = "config-tmp";
-              "/data" = "data";
+        };
+        submodules.instances.imap-backup = {
+          submodule = "cronjob";
+          args = {
+            inherit (cfg) schedule;
+            allowEgress = [ "internet" ];
+            container = {
+              image = images."ghcr.io/joeyates/imap-backup".ref;
+              imagePullPolicy = "Never";
+              command = [ "imap-backup" ];
+              args = [ "backup" ];
+              volumeMounts = {
+                "/.imap-backup".name = "config-tmp";
+                "/data".name = "data";
+              };
             };
           };
-          volumesByName = {
-            config.configMap.name = "imap-backup";
-            config-tmp.emptyDir.medium = "Memory";
-            data.persistentVolumeClaim.claimName = "imap-backup";
+          config.kubernetes.resources.cronJobs.imap-backup.spec.jobTemplate.spec.template.spec = {
+            initContainers.render-config = {
+              image = "${container-utils.buildArgs.name}:${container-utils.imageTag}";
+              imagePullPolicy = "Never";
+              args = [
+                ''
+                  touch /config-tmp/config.json
+                  chmod 600 /config-tmp/config.json
+                  conf=$(cat /config/config.json)
+                  jq -r '.accounts[] | .password' <<<"$conf" | {
+                    i=0
+                    while read -r var; do
+                      conf=$(jq --argjson idx "$i" --arg pw "''${!var}" '.accounts[$idx].password=$pw' <<<"$conf")
+                      : $((i++))
+                    done
+                    printf "%s\n" "$conf"
+                  } >/config-tmp/config.json
+                ''
+              ];
+              envFrom = [ { secretRef.name = "passwords"; } ];
+              securityContext = {
+                allowPrivilegeEscalation = false;
+                readOnlyRootFilesystem = true;
+                capabilities.drop = [ "ALL" ];
+              };
+              volumeMounts = {
+                "/config".name = "config";
+                "/config-tmp".name = "config-tmp";
+              };
+            };
+            volumes = {
+              config.configMap.name = "imap-backup";
+              config-tmp.emptyDir.medium = "Memory";
+              data.persistentVolumeClaim.claimName = "imap-backup";
+            };
           };
         };
       };

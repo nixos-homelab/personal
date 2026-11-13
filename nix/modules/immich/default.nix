@@ -47,74 +47,64 @@ in
     };
     homelab.cluster.backup.volumes.immich.immich = [ "/library" ];
     homelab.redis.databases.immich = lib.mkDefault "1";
-    kubetree.resources.immich = {
-      config = {
-        apiVersion = "v1";
-        kind = "ConfigMap";
-        metadata = {
-          namespace = "immich";
-          name = "immich";
-          labels."app.kubernetes.io/name" = "immich";
+    homelab.kubernetes.submodules.instances.immich = {
+      submodule = "workload";
+      args = {
+        allowEgress = [
+          "postgresql"
+          "redis"
+        ];
+        dataPath = "/data";
+        ingressPort = 2283;
+        ports = {
+          web = 2283;
+          metrics-api = 8081;
+          metrics-ms = 8082;
         };
-        data."immich-config.json" = builtins.toJSON {
-          backup.database.enabled = false;
-          newVersionCheck.enabled = false;
+        container = {
+          image = images."ghcr.io/immich-app/immich-server".ref;
+          imagePullPolicy = "Never";
+          env = {
+            IMMICH_CONFIG_FILE.value = "/etc/immich/immich-config.json";
+            IMMICH_VERSION.value = "v3";
+            IMMICH_PORT.value = "2283";
+            # Defined before DB_URL, which $(…) needs
+            DATABASE_PASSWORD.valueFrom.secretKeyRef = {
+              name = "postgresql-password";
+              key = "password";
+            };
+            DB_URL.value = "postgresql://immich:$(DATABASE_PASSWORD)@postgresql.postgresql:5432/immich";
+            REDIS_HOSTNAME.value = "redis.redis";
+            REDIS_DBINDEX.value = config.homelab.redis.databases.immich;
+          };
+          # A first start migrates the database, which can outlast the liveness probe on a busy node
+          startupProbe = {
+            httpGet = {
+              path = "/api/server/ping";
+              port = "web";
+            };
+            failureThreshold = 30;
+          };
+          livenessProbe.httpGet = {
+            path = "/api/server/ping";
+            port = "web";
+          };
+          readinessProbe.httpGet = {
+            path = "/api/server/ping";
+            port = "web";
+          };
+          volumeMounts."/etc/immich".name = "config";
         };
       };
-      workload = {
-        apiVersion = "cluster.local";
-        kind = "WorkloadMacro";
-        metadata.name = "immich";
-        spec = {
-          allowEgress = [
-            "postgresql"
-            "redis"
-          ];
-          dataPath = "/data";
-          ingressPort = 2283;
-          podSpecMacro = {
-            mainContainer = {
-              image = images."ghcr.io/immich-app/immich-server".ref;
-              imagePullPolicy = "Never";
-              envByName = {
-                IMMICH_CONFIG_FILE = "/etc/immich/immich-config.json";
-                IMMICH_VERSION = "v3";
-                IMMICH_PORT = "2283";
-                # Defined before DB_URL, which $(…) needs
-                DATABASE_PASSWORD.valueFrom.secretKeyRef = {
-                  name = "postgresql-password";
-                  key = "password";
-                };
-                DB_URL = "postgresql://immich:$(DATABASE_PASSWORD)@postgresql.postgresql:5432/immich";
-                REDIS_HOSTNAME = "redis.redis";
-                REDIS_DBINDEX = config.homelab.redis.databases.immich;
-              };
-              portsByName = {
-                web = 2283;
-                metrics-api = 8081;
-                metrics-ms = 8082;
-              };
-              # A first start migrates the database, which can outlast the liveness probe on a busy node
-              startupProbe = {
-                httpGet = {
-                  path = "/api/server/ping";
-                  port = "web";
-                };
-                failureThreshold = 30;
-              };
-              livenessProbe.httpGet = {
-                path = "/api/server/ping";
-                port = "web";
-              };
-              readinessProbe.httpGet = {
-                path = "/api/server/ping";
-                port = "web";
-              };
-              volumeMountsByPath."/etc/immich" = "config";
-            };
-            volumesByName.config.configMap.name = "immich";
+      config.kubernetes.resources = {
+        configMaps.immich = {
+          metadata.labels."app.kubernetes.io/name" = "immich";
+          data."immich-config.json" = builtins.toJSON {
+            backup.database.enabled = false;
+            newVersionCheck.enabled = false;
           };
         };
+        deployments.immich.spec.template.spec.volumes.config.configMap.name = "immich";
       };
     };
   };
