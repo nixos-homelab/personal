@@ -7,7 +7,6 @@
 }:
 let
   images = inputs.homelab-shared.lib.images.pinned pkgs ./Dockerfile;
-  ccfg = config.homelab.cluster;
   cfg = config.homelab.immich;
 in
 {

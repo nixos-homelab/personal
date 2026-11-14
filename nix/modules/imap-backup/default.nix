@@ -81,14 +81,14 @@ in
     homelab.cluster.images = builtins.attrValues images;
     homelab.cluster.backup.volumes.imap-backup.imap-backup = [ "/" ];
     setup-secrets = {
-      sources = lib.mapAttrs' (name: spec: {
+      sources = lib.mapAttrs' (name: _spec: {
         name = (envVarName name);
         value = {
           description = "IMAP Password for ${name}";
           cmd = hllib.setup-secrets.mkScript pkgs "getKubeSecret imap-backup passwords ${envVarName name}";
         };
       }) cfg.accounts;
-      destinations = lib.mapAttrsToList (name: spec: {
+      destinations = lib.mapAttrsToList (name: _spec: {
         logPrefix = "imap-backup (${envVarName name})";
         requires = [ (envVarName name) ];
         cmd = hllib.setup-secrets.mkScript pkgs ''setKubeSecret imap-backup passwords ${envVarName name} "''${${envVarName name}:?}"'';
