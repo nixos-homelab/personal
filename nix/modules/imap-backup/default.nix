@@ -78,7 +78,7 @@ in
   };
   imports = [ ];
   config = lib.mkIf cfg.enable {
-    services.k3s.images = builtins.attrValues images;
+    homelab.cluster.images = builtins.attrValues images;
     homelab.cluster.backup.volumes.imap-backup.imap-backup = [ "/" ];
     setup-secrets = {
       sources = lib.mapAttrs' (name: spec: {
