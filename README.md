@@ -3,7 +3,7 @@
 Personal data services on top of [nixos-homelab](https://github.com/nixos-homelab/shared):
 photo backup, file sync, and mail backup.
 
-For the full list of module options, see [the options reference](https://nixos-homelab.github.io/personal/options/).
+For the full list of module options, see [the documentation](https://nixos-homelab.github.io/personal/), under Options.
 
 ## Setup
 
