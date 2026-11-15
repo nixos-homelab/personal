@@ -17,7 +17,10 @@ in
     inputs.homelab-storage.nixosModules.postgresql
     inputs.homelab-storage.nixosModules.redis
   ]
-  ++ self.lib.importsApply [ ./homepage.nix ];
+  ++ self.lib.importsApply [
+    ./homepage.nix
+    ./metrics.nix
+  ];
   config = lib.mkIf cfg.enable {
     homelab.cluster.images = builtins.attrValues images;
     assertions = [
@@ -57,9 +60,9 @@ in
         ingressPort = 2283;
         ports = {
           web = 2283;
-          metrics-api = 8081;
-          metrics-ms = 8082;
         };
+        # Other pods reach the API alone; ports added beside it (metrics.nix) get policies of their own
+        policyPorts = [ "web" ];
         container = {
           image = images."ghcr.io/immich-app/immich-server".ref;
           imagePullPolicy = "Never";
