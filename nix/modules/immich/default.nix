@@ -16,6 +16,7 @@ in
   imports = [
     inputs.homelab-storage.nixosModules.postgresql
     inputs.homelab-storage.nixosModules.redis
+    inputs.homelab-monitoring.nixosModules.alloy
   ]
   ++ self.lib.importsApply [ ./homepage.nix ];
   config = lib.mkIf cfg.enable {
@@ -46,6 +47,19 @@ in
     };
     homelab.cluster.backup.volumes.immich.immich = [ "/library" ];
     homelab.redis.databases.immich = lib.mkDefault "1";
+    # One monitor per port: a monitor scrapes one Service port, and `endpoint` merges into that one endpoint
+    homelab.alloy.monitors =
+      lib.mapAttrs
+        (_: port: {
+          inherit port;
+          namespace = "immich";
+          selector."app.kubernetes.io/name" = "immich";
+          egress = "immich";
+        })
+        {
+          immich-api = "metrics-api";
+          immich-ms = "metrics-ms";
+        };
     homelab.kubernetes.submodules.instances.immich = {
       submodule = "workload";
       args = {
@@ -75,6 +89,8 @@ in
             DB_URL.value = "postgresql://immich:$(DATABASE_PASSWORD)@postgresql.postgresql:5432/immich";
             REDIS_HOSTNAME.value = "redis.redis";
             REDIS_DBINDEX.value = config.homelab.redis.databases.immich;
+            # Serves Prometheus metrics on metrics-api and metrics-ms, which serve nothing without it
+            IMMICH_TELEMETRY_INCLUDE.value = "all";
           };
           # A first start migrates the database, which can outlast the liveness probe on a busy node
           startupProbe = {
