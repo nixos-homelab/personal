@@ -91,6 +91,8 @@
               modules = lib.attrValues self.nixosModules ++ [
                 {
                   homelab = {
+                    # Evaluates the metrics parts of the modules, off with Alloy
+                    alloy.enable = true;
                     syncthing.enable = true;
                     immich.enable = true;
                     imap-backup.enable = true;

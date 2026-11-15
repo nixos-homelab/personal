@@ -25,10 +25,8 @@ in
   config = lib.mkIf (cfg.enable && cfg.metrics.enable) {
     homelab.alloy.monitors.syncthing = {
       port = "web";
-      # The pod's other ports sync; Alloy reaches the GUI port alone. The instance is a workload, which can't hold
-      # the policy: a manifest of its own
+      # The pod's other ports sync; Alloy reaches the GUI port alone
       podPort = 8384;
-      manifest = null;
     };
   };
 }

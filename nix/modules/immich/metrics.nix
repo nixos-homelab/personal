@@ -35,8 +35,6 @@ in
             (_: m: {
               inherit (m) port podPort;
               namespace = "immich";
-              # Immich's instance is a workload, which can't hold the policies (kubenix nesting): manifests of their own
-              manifest = null;
               selector."app.kubernetes.io/name" = "immich";
             })
             {
