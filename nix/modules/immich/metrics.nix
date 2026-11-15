@@ -5,35 +5,51 @@
   config,
   ...
 }:
+let
+  cfg = config.homelab.immich;
+in
 {
   imports = [ inputs.homelab-monitoring.nixosModules.alloy ];
-  config = lib.mkIf config.homelab.immich.enable {
-    homelab.kubernetes.submodules.instances.immich.args = {
-      ports = {
-        metrics-api = 8081;
-        metrics-ms = 8082;
-      };
-      container.env.IMMICH_TELEMETRY_INCLUDE.value = "all";
-    };
-    # One monitor per port: a monitor renders one ServiceMonitor endpoint
-    homelab.alloy.monitors =
-      lib.mapAttrs
-        (_: m: {
-          inherit (m) port podPort;
-          namespace = "immich";
-          # Immich's instance is a workload, which can't hold the policies (kubenix nesting): manifests of their own
-          manifest = null;
-          selector."app.kubernetes.io/name" = "immich";
-        })
-        {
-          immich-api = {
-            port = "metrics-api";
-            podPort = 8081;
-          };
-          immich-ms = {
-            port = "metrics-ms";
-            podPort = 8082;
-          };
-        };
+  options.homelab.immich.metrics.enable = lib.mkOption {
+    description = "Whether Alloy scrapes Immich's metrics.";
+    type = lib.types.bool;
+    default = config.homelab.alloy.enable;
+    defaultText = lib.literalExpression "config.homelab.alloy.enable";
   };
+  config = lib.mkIf (cfg.enable && cfg.metrics.enable) (
+    lib.mkMerge [
+      # Changes Immich's pod: only while Alloy is there to scrape it
+      (lib.mkIf config.homelab.alloy.enable {
+        homelab.kubernetes.submodules.instances.immich.args = {
+          ports = {
+            metrics-api = 8081;
+            metrics-ms = 8082;
+          };
+          container.env.IMMICH_TELEMETRY_INCLUDE.value = "all";
+        };
+      })
+      {
+        # One monitor per port: a monitor renders one ServiceMonitor endpoint
+        homelab.alloy.monitors =
+          lib.mapAttrs
+            (_: m: {
+              inherit (m) port podPort;
+              namespace = "immich";
+              # Immich's instance is a workload, which can't hold the policies (kubenix nesting): manifests of their own
+              manifest = null;
+              selector."app.kubernetes.io/name" = "immich";
+            })
+            {
+              immich-api = {
+                port = "metrics-api";
+                podPort = 8081;
+              };
+              immich-ms = {
+                port = "metrics-ms";
+                podPort = 8082;
+              };
+            };
+      }
+    ]
+  );
 }
