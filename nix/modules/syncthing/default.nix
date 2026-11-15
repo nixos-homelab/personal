@@ -13,7 +13,10 @@ in
   options.homelab.syncthing = {
     enable = lib.mkEnableOption "Syncthing";
   };
-  imports = self.lib.importsApply [ ./homepage.nix ];
+  imports = self.lib.importsApply [
+    ./homepage.nix
+    ./metrics.nix
+  ];
   config = lib.mkIf cfg.enable {
     homelab.cluster.images = builtins.attrValues images;
     homelab.cluster.backup.volumes.syncthing.syncthing = [
