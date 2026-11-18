@@ -81,6 +81,25 @@
         };
         perSystem =
           { pkgs, lib, ... }:
+          let
+            # Every module of this flake on
+            testModules = lib.attrValues self.nixosModules ++ [
+              {
+                homelab = {
+                  # Evaluates the metrics parts of the modules, off with Alloy
+                  alloy.enable = true;
+                  syncthing.enable = true;
+                  immich.enable = true;
+                  imap-backup.enable = true;
+                  imap-backup.accounts.example = {
+                    username = "user@example.org";
+                    server = "imap.example.org";
+                  };
+                  homepage.enable = true;
+                };
+              }
+            ];
+          in
           {
             # Dead Nix code. Pattern names stay: modules take { config, lib, pkgs, ... } whether they use them or not
             checks.deadnix = pkgs.runCommand "deadnix" { nativeBuildInputs = [ pkgs.deadnix ]; } ''
@@ -89,22 +108,12 @@
             '';
             checks.manifests = inputs.homelab-shared.lib.checks.manifests {
               inherit pkgs;
-              modules = lib.attrValues self.nixosModules ++ [
-                {
-                  homelab = {
-                    # Evaluates the metrics parts of the modules, off with Alloy
-                    alloy.enable = true;
-                    syncthing.enable = true;
-                    immich.enable = true;
-                    imap-backup.enable = true;
-                    imap-backup.accounts.example = {
-                      username = "user@example.org";
-                      server = "imap.example.org";
-                    };
-                    homepage.enable = true;
-                  };
-                }
-              ];
+              modules = testModules;
+            };
+            # The parsers of this flake's workloads on their examples, through the pinned Alloy and Loki
+            checks.logs = inputs.homelab-monitoring.lib.logs.check {
+              inherit pkgs;
+              modules = testModules;
             };
             packages = {
               options-docs = inputs.docs.lib.docs.options {
