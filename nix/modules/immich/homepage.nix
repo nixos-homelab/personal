@@ -25,16 +25,19 @@ in
   ];
   config = lib.mkIf cfg.enable {
     setup-secrets = {
-      sources.IMMICH_API_KEY = {
+      sources.IMMICH_API_KEY = hllib.setup-secrets.kubeSecretSource pkgs {
         description = "Immich API Key";
-        cmd = hllib.setup-secrets.mkScript pkgs "getKubeSecret homepage immich-api-key HOMEPAGE_VAR_IMMICH_API_KEY";
+        namespace = "homepage";
+        name = "immich-api-key";
+        field = "HOMEPAGE_VAR_IMMICH_API_KEY";
       };
       destinations = [
-        {
+        (hllib.setup-secrets.kubeSecretDestination pkgs {
           logPrefix = "Homepage (IMMICH_API_KEY)";
-          requires = [ "IMMICH_API_KEY" ];
-          cmd = hllib.setup-secrets.mkScript pkgs ''setKubeSecret homepage immich-api-key HOMEPAGE_VAR_IMMICH_API_KEY "''${IMMICH_API_KEY:?}"'';
-        }
+          namespace = "homepage";
+          name = "immich-api-key";
+          data.HOMEPAGE_VAR_IMMICH_API_KEY = "IMMICH_API_KEY";
+        })
       ];
     };
     homelab.homepage = {

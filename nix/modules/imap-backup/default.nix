@@ -84,16 +84,22 @@ in
     setup-secrets = {
       sources = lib.mapAttrs' (name: _spec: {
         name = (envVarName name);
-        value = {
+        value = hllib.setup-secrets.kubeSecretSource pkgs {
           description = "IMAP Password for ${name}";
-          cmd = hllib.setup-secrets.mkScript pkgs "getKubeSecret imap-backup passwords ${envVarName name}";
+          namespace = "imap-backup";
+          name = "passwords";
+          field = envVarName name;
         };
       }) cfg.accounts;
-      destinations = lib.mapAttrsToList (name: _spec: {
-        logPrefix = "imap-backup (${envVarName name})";
-        requires = [ (envVarName name) ];
-        cmd = hllib.setup-secrets.mkScript pkgs ''setKubeSecret imap-backup passwords ${envVarName name} "''${${envVarName name}:?}"'';
-      }) cfg.accounts;
+      destinations = lib.mapAttrsToList (
+        name: _spec:
+        hllib.setup-secrets.kubeSecretDestination pkgs {
+          logPrefix = "imap-backup (${envVarName name})";
+          namespace = "imap-backup";
+          name = "passwords";
+          data.${envVarName name} = envVarName name;
+        }
+      ) cfg.accounts;
     };
     homelab.kubernetes.submodules.instances.imap-backup = {
       submodule = "manifest";
