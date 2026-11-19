@@ -76,7 +76,8 @@ in
       );
     };
   };
-  imports = self.lib.importsApply [ ./logs.nix ];
+  imports = self.lib.importsApply [
+    ./home-area.nix ./logs.nix ];
   config = lib.mkIf cfg.enable {
     homelab.cluster.images = builtins.attrValues images;
     homelab.cluster.backup.volumes.imap-backup.imap-backup = [ "/" ];
