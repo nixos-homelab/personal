@@ -18,6 +18,7 @@ in
     inputs.homelab-storage.nixosModules.redis
   ]
   ++ self.lib.importsApply [
+    ./home-area.nix
     ./grafana.nix
     ./homepage.nix
     ./logs.nix
