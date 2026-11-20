@@ -14,7 +14,6 @@ in
     enable = lib.mkEnableOption "Syncthing";
   };
   imports = self.lib.importsApply [
-    ./home-area.nix
     ./grafana.nix
     ./homepage.nix
     ./logs.nix
