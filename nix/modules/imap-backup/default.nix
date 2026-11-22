@@ -94,15 +94,15 @@ in
           field = envVarName name;
         };
       }) cfg.accounts;
-      destinations = lib.mapAttrsToList (
-        name: _spec:
-        hllib.setup-secrets.kubeSecretDestination pkgs {
-          logPrefix = "imap-backup (${envVarName name})";
+      # One destination for all accounts: each apply replaces the keys of the one before it
+      destinations = [
+        (hllib.setup-secrets.kubeSecretDestination pkgs {
+          logPrefix = "imap-backup passwords";
           namespace = "imap-backup";
           name = "passwords";
-          data.${envVarName name} = envVarName name;
-        }
-      ) cfg.accounts;
+          data = lib.mapAttrs' (name: _spec: lib.nameValuePair (envVarName name) (envVarName name)) cfg.accounts;
+        })
+      ];
     };
     homelab.kubernetes.submodules.instances.imap-backup = {
       submodule = "manifest";
