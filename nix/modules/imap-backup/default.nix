@@ -78,6 +78,7 @@ in
   };
   imports = self.lib.importsApply [
     ./grafana.nix
+    ./alerts.nix
     ./logs.nix
   ];
   config = lib.mkIf cfg.enable {
