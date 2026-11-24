@@ -26,6 +26,10 @@ in
             metrics-ms = 8082;
           };
           container.env.IMMICH_TELEMETRY_INCLUDE.value = "all";
+          # v3.4.2 binds the exporters to IMMICH_HOST, `::` when unset, and then answers every request with 400
+          # (immich-app/immich#33466). Fixed after v3.4.2: drop this with the next release. The API listens on it
+          # too, which the Service and the probes reach over IPv4
+          container.env.IMMICH_HOST.value = "0.0.0.0";
         };
       })
       {
