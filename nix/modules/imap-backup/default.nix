@@ -92,6 +92,8 @@ in
           namespace = "imap-backup";
           name = "passwords";
           field = envVarName name;
+          # The mail account's, typed in on a real machine
+          test = "echo test-imap-password";
         };
       }) cfg.accounts;
       # One destination for all accounts: each apply replaces the keys of the one before it
@@ -100,7 +102,9 @@ in
           logPrefix = "imap-backup passwords";
           namespace = "imap-backup";
           name = "passwords";
-          data = lib.mapAttrs' (name: _spec: lib.nameValuePair (envVarName name) (envVarName name)) cfg.accounts;
+          data = lib.mapAttrs' (
+            name: _spec: lib.nameValuePair (envVarName name) (envVarName name)
+          ) cfg.accounts;
         })
       ];
     };
